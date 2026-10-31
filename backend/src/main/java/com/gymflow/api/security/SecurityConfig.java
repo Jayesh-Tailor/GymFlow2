@@ -10,10 +10,12 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Instant;
 import java.util.Map;
 
+@Profile("prod")
 @Configuration
 public class SecurityConfig {
     @Bean
