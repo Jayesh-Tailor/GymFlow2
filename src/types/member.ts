@@ -26,8 +26,6 @@ export interface DashboardSummary {
   activeMembers: number
   expiringMembers: number
   expiredMembers: number
-  monthlyRevenue: number
-  attendanceToday: number
 }
 
 export type MemberStatusFilter = 'All members' | MembershipStatus

@@ -13,6 +13,7 @@ import java.util.UUID;
 @Service
 @Transactional
 public class MemberService {
+    
     private static final List<String> AVATAR_COLORS = List.of("mint", "peach", "lavender", "blue", "yellow", "rose");
 
     private final MemberRepository memberRepository;

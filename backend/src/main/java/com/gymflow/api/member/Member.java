@@ -11,6 +11,21 @@ import java.util.UUID;
 @Entity
 @Table(name = "members")
 public class Member {
+
+    public void updateDetails(
+            String name,
+            String email,
+            String phone,
+            String plan,
+            LocalDate expiresAt
+    ) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.plan = plan;
+        this.expiresAt = expiresAt;
+    }
+
     @Id
     private UUID id;
 

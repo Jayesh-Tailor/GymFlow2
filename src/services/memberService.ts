@@ -1,66 +1,75 @@
-import { membershipPlans, mockDashboardSummary, mockMembers } from '../data/mockData'
-import type { DashboardSummary, Member, MembershipStatus, NewMemberInput } from '../types/member'
+import { membershipPlans } from '../data/mockData'
 
-const requestDelay = 300
-let members = [...mockMembers]
-let nextMemberNumber = 1043
+import type {
+  DashboardSummary,
+  Member,
+  NewMemberInput,
+} from '../types/member'
 
-function waitForMockResponse(): Promise<void> {
-  return new Promise((resolve) => globalThis.setTimeout(resolve, requestDelay))
-}
+// Spring Boot backend
+const API_BASE_URL = 'http://localhost:8080/api'
 
-function getMembershipStatus(expiresAt: string): MembershipStatus {
-  const remainingDays = Math.ceil(
-    (new Date(`${expiresAt}T23:59:59`).getTime() - Date.now()) / 86_400_000,
-  )
+// Generic API request helper
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
 
-  if (remainingDays < 0) return 'Expired'
-  if (remainingDays <= 7) return 'Expiring soon'
-  return 'Active'
-}
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
 
-function getInitials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`
 
-function getAvatarColor(index: number): Member['color'] {
-  const colors: Member['color'][] = ['mint', 'peach', 'lavender', 'blue', 'yellow', 'rose']
-  return colors[index % colors.length]
+    try {
+      const body: unknown = await response.json()
+
+      if (
+        typeof body === 'object' &&
+        body !== null &&
+        'message' in body &&
+        typeof body.message === 'string'
+      ) {
+        message = body.message
+      }
+    } catch {
+      // Keep the default error message if the response isn't JSON.
+    }
+
+    throw new Error(message)
+  }
+
+  return response.json() as Promise<T>
 }
 
 export const memberService = {
+
+  // Dashboard summary is temporarily mock data.
+  // We'll connect it when we build the dashboard API.
   async getDashboardSummary(): Promise<DashboardSummary> {
-    await waitForMockResponse()
-    return { ...mockDashboardSummary }
+    return apiRequest<DashboardSummary>('/dashboard/summary')
   },
 
+  // Fetch actual members from Spring Boot
   async getMembers(): Promise<Member[]> {
-    await waitForMockResponse()
-    return [...members]
+    return apiRequest<Member[]>('/members')
   },
 
+  // Save a new member in PostgreSQL through Spring Boot
   async createMember(input: NewMemberInput): Promise<Member> {
-    await waitForMockResponse()
 
     if (!membershipPlans.includes(input.plan)) {
       throw new Error('Choose a valid membership plan.')
     }
 
-    const member: Member = {
-      ...input,
-      id: `GF-${nextMemberNumber++}`,
-      joinedAt: new Date().toISOString().slice(0, 10),
-      status: getMembershipStatus(input.expiresAt),
-      initials: getInitials(input.name),
-      color: getAvatarColor(members.length),
-    }
-
-    members = [member, ...members]
-    return member
+    return apiRequest<Member>('/members', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
   },
 }

@@ -60,7 +60,7 @@ export default function DashboardPage({
             <StatCard label="Total members" value={summary.totalMembers.toLocaleString('en-IN')} note="+8.2% this month" icon={UsersRound} tone="green" />
             <StatCard label="Active memberships" value={summary.activeMembers.toLocaleString('en-IN')} note="87% of members" icon={CircleDollarSign} tone="blue" />
             <StatCard label="Expiring this week" value={String(summary.expiringMembers)} note="Needs attention" icon={Clock3} tone="orange" />
-            <StatCard label="Visits today" value={String(summary.attendanceToday)} note="+12% vs. last week" icon={CalendarDays} tone="purple" />
+            <StatCard label="Expired memberships" value={String(summary.expiredMembers)} note="Renewals needed" icon={UsersRound} tone="purple" />
           </section>
 
           <section className="dashboard-grid">
